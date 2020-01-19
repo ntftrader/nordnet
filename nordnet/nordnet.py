@@ -330,6 +330,10 @@ class Nordnet:
             df['time'] = df['time'].dt.tz_localize('UTC').dt.tz_convert(LOCAL_TZ)
             df = df.reset_index(drop=False)
             df.set_index(pd.DatetimeIndex(df['time']), inplace=True)
+            
+            # Delete last if equal
+            if df.tail(1).index.date == df.tail(2).head(1).index.date:
+                df.drop(df.tail(1).index, inplace=True)
             # df = df.iloc[::-1]
 
             return df

@@ -5,7 +5,10 @@ __pycache__/
 
 # C extensions
 *.so
-
+bin/
+include/
+lib64
+pip-selfcheck.json
 # Distribution / packaging
 .Python
 build/

@@ -1,1 +1,1 @@
-from nordnet.nordnet import * 
+from .nordnet import *

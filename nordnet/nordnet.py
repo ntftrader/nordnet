@@ -51,6 +51,25 @@ EXCHANGES = [
     {'c': 'ca', 'm': 'catsx60'},
 ]
 
+INDICATORS = [
+    {'c': 'NO', 'm': 'OSE', 'i': 'OBX'},
+    {'c': 'SE', 'm': 'SSE', 'i': 'OMXSPI'},
+    {'c': 'FI', 'm': 'HEX', 'i': 'OMXHPI'},
+    {'c': 'DK', 'm': 'CSE', 'i': 'OMXC25'},
+    {'c': 'DE', 'm': 'SIX', 'i': 'B-IDX-DAXI'},
+    {'c': 'US', 'm': 'USX', 'i': 'DJX-CADOW'},
+    {'c': 'UK', 'm': 'SIX', 'i': 'B-IDX-FTSE'},
+    {'c': 'US', 'm': 'SIX', 'i': 'SIX-IDX-NCMP'},
+    {'c': 'US', 'm': 'USX', 'i': 'DJX-FRDOW'},
+    {'c': 'US', 'm': 'USX', 'i': 'DJX-HKDOWD'},
+    {'c': 'US', 'm': 'USX', 'i': 'DJX-JPDOWD'},
+    {'c': 'US', 'm': 'USX', 'i': 'DJX-DJSH'},
+    {'c': 'US', 'm': 'SIX', 'i': 'RTS'},
+    {'c': 'US', 'm': 'USX', 'i': 'DJX-B50IND'},
+    {'c': 'US', 'm': 'USX', 'i': 'DJX-ZADOWD'},
+    {'c': 'US', 'm': 'CME', 'i': 'ENQ100-1'}
+]
+
 
 def before(f):
     @wraps(f)
@@ -693,7 +712,8 @@ class Nordnet:
     @before
     def get_indicator_historical_sparks(self):
         resp = requests.get(
-            '{}/api/2/indicators/historical/sparkpoints/SSE:OMXSPI,SIX:SIX-IDX-NCMP,CME:ENQ100-1,CSE:OMXC25,OSE:OBX,HEX:OMXHPI,SIX:B-IDX-DAXI,USX:DJX-CADOW,SIX:B-IDX-FTSE,USX:DJX-FRDOW,USX:DJX-HKDOWD,USX:DJX-JPDOWD,USX:DJX-DJSH,SIX:RTS,USX:DJX-B50IND,USX:DJX-ZADOWD'.format(
+            '{}/api/2/indicators/historical/sparkpoints/'
+            ''.format(
                 self.BASE_URL),
             cookies=self.COOKIES,
             headers=self.HEADERS)
@@ -825,9 +845,6 @@ class Nordnet:
         if status is True:
             df = pd.DataFrame(indexes)
 
-            # df['open'] = pd.to_datetime(df.open, unit='s')
-            # df['open'] = df['open'].dt.tz_localize('UTC').dt.tz_convert('Europe/Oslo')
-            # df['open'] = [time.time() for time in df['open']]
             df['open'] = pd.to_timedelta(df.open, unit='s')
             df['close'] = pd.to_timedelta(df.open, unit='s')
 
@@ -890,6 +907,49 @@ class Nordnet:
 
         if status is True:
             df = pd.DataFrame(instruments)
+            df['tick_timestamp'] = pd.to_timedelta(df.tick_timestamp, unit='ms')
+            return df
+
+        return pd.DataFrame()
+
+    def _get_indicator_list(self, page, limit):
+        resp = requests.get(
+            '{}/api/2/instrument_search/query/indicator?entity_type=INDEX&limit={}&offset={}'.format(self.BASE_URL,
+                                                                                                    limit,
+                                                                                                    page),
+            cookies=self.COOKIES,
+            headers=self.HEADERS)
+        if resp.status_code == 200:
+            result = resp.json()
+            return True, result.get('rows', 0), result.get('total_hits', 0), result.get('results')
+
+    @before
+    def get_all_indicators(self, countries=['no', 'se']):
+
+        limit = 100
+        offset = 0
+        more_to_go = True
+        results = []
+        while more_to_go is True:
+
+            status, rows, total, r = self._get_indicator_list(page=offset, limit=limit)
+            if status is True:
+                results += [{**x['instrument_info'], **x['exchange_info'],
+                             **self._fix_price_info(x['price_info']),
+                             **x['historical_returns_info']} for x in r]
+
+            offset += limit
+
+            if len(results) >= total - 1 or limit > rows:
+                more_to_go = False
+
+        return True, results
+
+    def get_all_indicators_pd(self, countries=['no', 'se']):
+        status, indexes = self.get_all_indicators(countries=countries)
+
+        if status is True:
+            df = pd.DataFrame(indexes)
             df['tick_timestamp'] = pd.to_timedelta(df.tick_timestamp, unit='ms')
             return df
 

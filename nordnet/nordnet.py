@@ -1,3 +1,17 @@
+"""
+    Nordnet
+    =======
+
+    A simple wrapper around nordnet.no's (not) public api
+
+    Increase columns if using dataframes and cli
+import pandas as pd
+pd.set_option('display.max_rows', 500)
+pd.set_option('display.max_columns', 500)
+pd.set_option('display.width', 1000)
+
+"""
+
 # import talib
 import pandas as pd
 # import numpy as np
@@ -11,6 +25,11 @@ import os
 
 import inspect
 from functools import wraps
+
+"""
+"""
+
+LOCAL_TZ = 'Europe/Oslo'
 
 EXCHANGES = [
     {'c': 'no', 'm': 'ose'},
@@ -51,23 +70,23 @@ EXCHANGES = [
     {'c': 'ca', 'm': 'catsx60'},
 ]
 
-INDICATORS = [
+INDEXES = [
     {'c': 'NO', 'm': 'OSE', 'i': 'OBX'},
     {'c': 'SE', 'm': 'SSE', 'i': 'OMXSPI'},
     {'c': 'FI', 'm': 'HEX', 'i': 'OMXHPI'},
     {'c': 'DK', 'm': 'CSE', 'i': 'OMXC25'},
     {'c': 'DE', 'm': 'SIX', 'i': 'B-IDX-DAXI'},
-    {'c': 'US', 'm': 'USX', 'i': 'DJX-CADOW'},
+    {'c': 'CA', 'm': 'USX', 'i': 'DJX-CADOW'},
     {'c': 'UK', 'm': 'SIX', 'i': 'B-IDX-FTSE'},
-    {'c': 'US', 'm': 'SIX', 'i': 'SIX-IDX-NCMP'},
-    {'c': 'US', 'm': 'USX', 'i': 'DJX-FRDOW'},
-    {'c': 'US', 'm': 'USX', 'i': 'DJX-HKDOWD'},
-    {'c': 'US', 'm': 'USX', 'i': 'DJX-JPDOWD'},
-    {'c': 'US', 'm': 'USX', 'i': 'DJX-DJSH'},
+    {'c': 'FR', 'm': 'USX', 'i': 'DJX-FRDOW'},
+    {'c': 'HK', 'm': 'USX', 'i': 'DJX-HKDOWD'},
+    {'c': 'JP', 'm': 'USX', 'i': 'DJX-JPDOWD'},
+    {'c': 'CH', 'm': 'USX', 'i': 'DJX-DJSH'},
     {'c': 'US', 'm': 'SIX', 'i': 'RTS'},
-    {'c': 'US', 'm': 'USX', 'i': 'DJX-B50IND'},
-    {'c': 'US', 'm': 'USX', 'i': 'DJX-ZADOWD'},
-    {'c': 'US', 'm': 'CME', 'i': 'ENQ100-1'}
+    {'c': 'IN', 'm': 'USX', 'i': 'DJX-B50IND'},
+    {'c': 'ZA', 'm': 'USX', 'i': 'DJX-ZADOWD'},
+    {'c': 'US', 'm': 'CME', 'i': 'ENQ100-1'},
+    {'c': 'US', 'm': 'SIX', 'i': 'SIX-IDX-NCMP'}
 ]
 
 
@@ -231,9 +250,9 @@ class Nordnet:
 
             df = pd.DataFrame(trades[0]['trades'])
             df['tick_timestamp'] = pd.to_datetime(df.tick_timestamp, unit='ms')
-            df['tick_timestamp'] = df['tick_timestamp'].dt.tz_localize('UTC').dt.tz_convert('Europe/Oslo')
+            df['tick_timestamp'] = df['tick_timestamp'].dt.tz_localize('UTC').dt.tz_convert(LOCAL_TZ)
             df['trade_timestamp'] = pd.to_datetime(df.trade_timestamp, unit='ms')
-            df['trade_timestamp'] = df['trade_timestamp'].dt.tz_localize('UTC').dt.tz_convert('Europe/Oslo')
+            df['trade_timestamp'] = df['trade_timestamp'].dt.tz_localize('UTC').dt.tz_convert(LOCAL_TZ)
             df = df.reset_index(drop=False)
             df.set_index('tick_timestamp', inplace=True)
 
@@ -265,9 +284,9 @@ class Nordnet:
         if status is True:
             df = pd.DataFrame(prices)
             df['tick_timestamp'] = pd.to_datetime(df.tick_timestamp, unit='ms')
-            df['tick_timestamp'] = df['tick_timestamp'].dt.tz_localize('UTC').dt.tz_convert('Europe/Oslo')
+            df['tick_timestamp'] = df['tick_timestamp'].dt.tz_localize('UTC').dt.tz_convert(LOCAL_TZ)
             df['trade_timestamp'] = pd.to_datetime(df.trade_timestamp, unit='ms')
-            df['trade_timestamp'] = df['trade_timestamp'].dt.tz_localize('UTC').dt.tz_convert('Europe/Oslo')
+            df['trade_timestamp'] = df['trade_timestamp'].dt.tz_localize('UTC').dt.tz_convert(LOCAL_TZ)
 
             df = df.reset_index(drop=False)
             df.set_index('tick_timestamp', inplace=True)
@@ -308,7 +327,7 @@ class Nordnet:
             df = pd.DataFrame(history[0]['prices'])
             df.rename(columns={'last': 'close'}, inplace=True)
             df['time'] = pd.to_datetime(df.time, unit='ms')
-            df['time'] = df['time'].dt.tz_localize('UTC').dt.tz_convert('Europe/Oslo')
+            df['time'] = df['time'].dt.tz_localize('UTC').dt.tz_convert(LOCAL_TZ)
             df = df.reset_index(drop=False)
             df.set_index(pd.DatetimeIndex(df['time']), inplace=True)
             # df = df.iloc[::-1]
@@ -423,7 +442,7 @@ class Nordnet:
         if status is True:
             df = pd.DataFrame(news)
             df['timestamp'] = pd.to_datetime(df.timestamp, unit='ms')
-            df['timestamp'] = df['timestamp'].dt.tz_localize('UTC').dt.tz_convert('Europe/Oslo')
+            df['timestamp'] = df['timestamp'].dt.tz_localize('UTC').dt.tz_convert(LOCAL_TZ)
 
             df = df.reset_index(drop=False)
             df.set_index('timestamp', inplace=True)
@@ -576,7 +595,7 @@ class Nordnet:
         if status is True:
             df = pd.DataFrame(trades[0]['trades'])
             df['datetime'] = pd.to_datetime(df.trade_timestamp, unit='ms')
-            df['datetime'] = df['datetime'].dt.tz_localize('UTC').dt.tz_convert('Europe/Oslo')
+            df['datetime'] = df['datetime'].dt.tz_localize('UTC').dt.tz_convert(LOCAL_TZ)
             df.set_index('datetime', inplace=True)
 
             return df
@@ -584,8 +603,8 @@ class Nordnet:
         return pd.DataFrame()
 
     @before
-    def get_indicators(self):
-        resp = requests.get('{}/api/2/indicators'.format(self.BASE_URL),
+    def get_INDEXES(self):
+        resp = requests.get('{}/api/2/INDEXES'.format(self.BASE_URL),
                             cookies=self.COOKIES,
                             headers=self.HEADERS)
         if resp.status_code == 200:
@@ -593,10 +612,10 @@ class Nordnet:
 
         return False, []
 
-    def get_indicators_pd(self):
-        status, indicators = self.get_indicators()
+    def get_INDEXES_pd(self):
+        status, INDEXES = self.get_INDEXES()
         if status is True:
-            df = pd.DataFrame(indicators)
+            df = pd.DataFrame(INDEXES)
             df['open'] = pd.to_timedelta(df.open, unit='s')
             df['close'] = pd.to_timedelta(df.open, unit='s')
             df.set_index('identifier', inplace=True)
@@ -608,7 +627,7 @@ class Nordnet:
     @before
     def get_indicator_historical(self, indicator_id='OSE:OSEBX', weeks=10):
         resp = requests.get(
-            '{}/api/2/indicators/historical/values/{}?weeks={}'.format(self.BASE_URL, indicator_id, weeks),
+            '{}/api/2/INDEXES/historical/values/{}?weeks={}'.format(self.BASE_URL, indicator_id, weeks),
             cookies=self.COOKIES,
             headers=self.HEADERS)
         if resp.status_code == 200:
@@ -712,7 +731,7 @@ class Nordnet:
     @before
     def get_indicator_historical_sparks(self):
         resp = requests.get(
-            '{}/api/2/indicators/historical/sparkpoints/'
+            '{}/api/2/INDEXES/historical/sparkpoints/'
             ''.format(
                 self.BASE_URL),
             cookies=self.COOKIES,
@@ -724,8 +743,8 @@ class Nordnet:
 
     @before
     def get_indicator(self, indicator_id='OSEBX', src='OSE', from_date=datetime.datetime.now().strftime('%Y-%m-%d')):
-       # print('{}/api/2/indicators/{}:{}?from={}'.format(self.BASE_URL, src, indicator_id, from_date))
-        resp = requests.get('{}/api/2/indicators/{}:{}?from={}'.format(self.BASE_URL, src, indicator_id, from_date),
+       # print('{}/api/2/INDEXES/{}:{}?from={}'.format(self.BASE_URL, src, indicator_id, from_date))
+        resp = requests.get('{}/api/2/INDEXES/{}:{}?from={}'.format(self.BASE_URL, src, indicator_id, from_date),
                             cookies=self.COOKIES,
                             headers=self.HEADERS)
         if resp.status_code == 200:
@@ -736,9 +755,9 @@ class Nordnet:
     @before
     def get_indicator_history(self, indicator_id='OSEBX', src='OSE',
                               from_date=datetime.datetime.now().strftime('%Y-%m-%d')):
-        #print('{}/api/2/indicators/historical/values/{}:{}?from={}'.format(self.BASE_URL, src, indicator_id, from_date))
+        #print('{}/api/2/INDEXES/historical/values/{}:{}?from={}'.format(self.BASE_URL, src, indicator_id, from_date))
         resp = requests.get(
-            '{}/api/2/indicators/historical/values/{}:{}?from={}'.format(self.BASE_URL, src, indicator_id, from_date),
+            '{}/api/2/INDEXES/historical/values/{}:{}?from={}'.format(self.BASE_URL, src, indicator_id, from_date),
             cookies=self.COOKIES,
             headers=self.HEADERS)
         if resp.status_code == 200:
@@ -802,7 +821,7 @@ class Nordnet:
         if status is True:
             df = pd.DataFrame(comments)
             df['created'] = pd.to_datetime(df.created, unit='ms')
-            df['created'] = df['created'].dt.tz_localize('UTC').dt.tz_convert('Europe/Oslo')
+            df['created'] = df['created'].dt.tz_localize('UTC').dt.tz_convert(LOCAL_TZ)
 
             df = df.reset_index(drop=False)
             df.set_index('created', inplace=True)
@@ -826,11 +845,34 @@ class Nordnet:
 
         return r.get('count', 0)
 
+
+    def _fix_price_info(self, p):
+        """
+        Unpacks the price_info dict
+        :param p:
+        :return:
+        """
+
+        p['ask'] = p.get('ask', {}).get('price', None)
+        p['bid'] = p.get('bid', {}).get('price', None)
+
+        p['open'] = p.get('open', {}).get('price', None)
+        p['high'] = p.get('high', {}).get('price', None)
+        p['low'] = p.get('low', {}).get('price', None)
+        p['close'] = p.get('close', {}).get('price', None)
+        p['last'] = p.get('last', {}).get('price', None)
+
+        p['diff'] = p.get('diff', {}).get('diff', None)
+        p['spread'] = p.get('spread', {}).get('price', None)
+
+        return p
+
     @before
     def get_indexes(self) -> (bool, list):
         resp = requests.get(
-            '{}/api/2/indicators/OSE:OSEBX,OSE:OBX,SSE:OMXSPI,CSE:OMXC25,HEX:OMXHPI,SIX:B-IDX-DAXI,SIX:SIX-IDX-N100,SIX:SIX-IDX-NCMP'.format(
-                self.BASE_URL),
+            '{}/api/2/INDEXES/{}'.format(
+                self.BASE_URL,
+                ','.join(INDEXES)),
             cookies=self.COOKIES,
             headers=self.HEADERS)
 
@@ -866,21 +908,7 @@ class Nordnet:
 
         return False, 0, 0, []
 
-    def _fix_price_info(self, p):
 
-        p['ask'] = p.get('ask', {}).get('price', None)
-        p['bid'] = p.get('bid', {}).get('price', None)
-
-        p['open'] = p.get('open', {}).get('price', None)
-        p['high'] = p.get('high', {}).get('price', None)
-        p['low'] = p.get('low', {}).get('price', None)
-        p['close'] = p.get('close', {}).get('price', None)
-        p['last'] = p.get('last', {}).get('price', None)
-
-        p['diff'] = p.get('diff', {}).get('diff', None)
-        p['spread'] = p.get('spread', {}).get('price', None)
-
-        return p
 
     @before
     def get_all_instruments(self, countries=['no', 'se']):
@@ -912,6 +940,7 @@ class Nordnet:
 
         return pd.DataFrame()
 
+    # INDEXES
     def _get_indicator_list(self, page, limit):
         resp = requests.get(
             '{}/api/2/instrument_search/query/indicator?entity_type=INDEX&limit={}&offset={}'.format(self.BASE_URL,
@@ -924,7 +953,7 @@ class Nordnet:
             return True, result.get('rows', 0), result.get('total_hits', 0), result.get('results')
 
     @before
-    def get_all_indicators(self, countries=['no', 'se']):
+    def get_all_INDEXES(self, countries=['no', 'se']):
 
         limit = 100
         offset = 0
@@ -945,11 +974,146 @@ class Nordnet:
 
         return True, results
 
-    def get_all_indicators_pd(self, countries=['no', 'se']):
-        status, indexes = self.get_all_indicators(countries=countries)
+    def get_all_INDEXES_pd(self, countries=['no', 'se']):
+        status, indexes = self.get_all_INDEXES(countries=countries)
 
         if status is True:
             df = pd.DataFrame(indexes)
+            df['tick_timestamp'] = pd.to_timedelta(df.tick_timestamp, unit='ms')
+            return df
+
+        return pd.DataFrame()
+
+    # COMMODITIES
+    def _get_commodity_list(self, page, limit):
+        resp = requests.get(
+            '{}/api/2/instrument_search/query/indicator?entity_type=COMMODITY&limit={}&offset={}'.format(self.BASE_URL,
+                                                                                                     limit,
+                                                                                                     page),
+            cookies=self.COOKIES,
+            headers=self.HEADERS)
+        if resp.status_code == 200:
+            result = resp.json()
+            return True, result.get('rows', 0), result.get('total_hits', 0), result.get('results')
+
+    @before
+    def get_all_commodities(self, countries=['no', 'se']):
+
+        limit = 100
+        offset = 0
+        more_to_go = True
+        results = []
+        while more_to_go is True:
+
+            status, rows, total, r = self._get_commodity_list(page=offset, limit=limit)
+            if status is True:
+                results += [{**x['instrument_info'], **x['indicator_info'],
+                             **x['exchange_info'],
+                             **self._fix_price_info(x['price_info']),
+                             **x['historical_returns_info']} for x in r]
+
+            offset += limit
+
+            if len(results) >= total - 1 or limit > rows:
+                more_to_go = False
+
+        return True, results
+
+    def get_all_commodities_pd(self, countries=['no', 'se']):
+        status, commodities = self.get_all_commodities(countries=countries)
+
+        if status is True:
+            df = pd.DataFrame(commodities)
+            df['tick_timestamp'] = pd.to_timedelta(df.tick_timestamp, unit='ms')
+            return df
+
+        return pd.DataFrame()
+
+    # INTEREST
+    def _get_interest_list(self, page, limit):
+        resp = requests.get(
+            '{}/api/2/instrument_search/query/indicator?entity_type=INTEREST&limit={}&offset={}'.format(self.BASE_URL,
+                                                                                                     limit,
+                                                                                                     page),
+            cookies=self.COOKIES,
+            headers=self.HEADERS)
+        if resp.status_code == 200:
+            result = resp.json()
+            return True, result.get('rows', 0), result.get('total_hits', 0), result.get('results')
+
+    @before
+    def get_all_interest(self, countries=['no', 'se']):
+
+        limit = 100
+        offset = 0
+        more_to_go = True
+        results = []
+        while more_to_go is True:
+
+            status, rows, total, r = self._get_interest_list(page=offset, limit=limit)
+            if status is True:
+                results += [{**x['instrument_info'], **x['indicator_info'],
+                             **x['exchange_info'],
+                             **self._fix_price_info(x['price_info']),
+                             **x['historical_returns_info']} for x in r]
+
+            offset += limit
+
+            if len(results) >= total - 1 or limit > rows:
+                more_to_go = False
+
+        return True, results
+
+    def get_all_interest_pd(self, countries=['no', 'se']):
+        status, interest = self.get_all_interest(countries=countries)
+
+        if status is True:
+            df = pd.DataFrame(interest)
+            df['tick_timestamp'] = pd.to_timedelta(df.tick_timestamp, unit='ms')
+            return df
+
+        return pd.DataFrame()
+
+    # FOREX
+    def _get_forex_list(self, page, limit):
+        resp = requests.get(
+            '{}/api/2/instrument_search/query/indicator?entity_type=CURRENCY&limit={}&offset={}'.format(self.BASE_URL,
+                                                                                                     limit,
+                                                                                                     page),
+            cookies=self.COOKIES,
+            headers=self.HEADERS)
+        if resp.status_code == 200:
+            result = resp.json()
+            return True, result.get('rows', 0), result.get('total_hits', 0), result.get('results')
+
+    @before
+    def get_all_forex(self, countries=['no', 'se']):
+
+        limit = 100
+        offset = 0
+        more_to_go = True
+        results = []
+        while more_to_go is True:
+
+            status, rows, total, r = self._get_forex_list(page=offset, limit=limit)
+            if status is True:
+                results += [{**x['instrument_info'], **x['indicator_info'],
+                             **x['exchange_info'],
+                             **self._fix_price_info(x['price_info']),
+                             **x['historical_returns_info']} for x in r]
+
+            offset += limit
+
+            if len(results) >= total - 1 or limit > rows:
+                more_to_go = False
+
+        return True, results
+
+    def get_all_forex_pd(self, countries=['no', 'se']):
+        status, forex = self.get_all_forex(countries=countries)
+
+        if status is True:
+            df = pd.DataFrame(forex)
             df['tick_timestamp'] = pd.to_timedelta(df.tick_timestamp, unit='ms')
             return df
 

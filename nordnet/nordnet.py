@@ -607,8 +607,8 @@ class Nordnet:
         return pd.DataFrame()
 
     @before
-    def get_INDEXES(self):
-        resp = requests.get('{}/api/2/INDEXES'.format(self.BASE_URL),
+    def get_indicators(self):
+        resp = requests.get('{}/api/2/indicators'.format(self.BASE_URL),
                             cookies=self.COOKIES,
                             headers=self.HEADERS)
         if resp.status_code == 200:
@@ -616,10 +616,10 @@ class Nordnet:
 
         return False, []
 
-    def get_INDEXES_pd(self):
-        status, INDEXES = self.get_INDEXES()
+    def get_indicators_pd(self):
+        status, indicators = self.get_indicators()
         if status is True:
-            df = pd.DataFrame(INDEXES)
+            df = pd.DataFrame(indicators)
             df['open'] = pd.to_timedelta(df.open, unit='s')
             df['close'] = pd.to_timedelta(df.open, unit='s')
             df.set_index('identifier', inplace=True)
@@ -631,7 +631,7 @@ class Nordnet:
     @before
     def get_indicator_historical(self, indicator_id='OSE:OSEBX', weeks=10):
         resp = requests.get(
-            '{}/api/2/INDEXES/historical/values/{}?weeks={}'.format(self.BASE_URL, indicator_id, weeks),
+            '{}/api/2/indicators/historical/values/{}?weeks={}'.format(self.BASE_URL, indicator_id, weeks),
             cookies=self.COOKIES,
             headers=self.HEADERS)
         if resp.status_code == 200:
@@ -735,7 +735,7 @@ class Nordnet:
     @before
     def get_indicator_historical_sparks(self):
         resp = requests.get(
-            '{}/api/2/INDEXES/historical/sparkpoints/'
+            '{}/api/2/indicators/historical/sparkpoints/'
             ''.format(
                 self.BASE_URL),
             cookies=self.COOKIES,
@@ -747,8 +747,8 @@ class Nordnet:
 
     @before
     def get_indicator(self, indicator_id='OSEBX', src='OSE', from_date=datetime.datetime.now().strftime('%Y-%m-%d')):
-       # print('{}/api/2/INDEXES/{}:{}?from={}'.format(self.BASE_URL, src, indicator_id, from_date))
-        resp = requests.get('{}/api/2/INDEXES/{}:{}?from={}'.format(self.BASE_URL, src, indicator_id, from_date),
+       # print('{}/api/2/indicators/{}:{}?from={}'.format(self.BASE_URL, src, indicator_id, from_date))
+        resp = requests.get('{}/api/2/indicators/{}:{}?from={}'.format(self.BASE_URL, src, indicator_id, from_date),
                             cookies=self.COOKIES,
                             headers=self.HEADERS)
         if resp.status_code == 200:
@@ -759,9 +759,9 @@ class Nordnet:
     @before
     def get_indicator_history(self, indicator_id='OSEBX', src='OSE',
                               from_date=datetime.datetime.now().strftime('%Y-%m-%d')):
-        #print('{}/api/2/INDEXES/historical/values/{}:{}?from={}'.format(self.BASE_URL, src, indicator_id, from_date))
+        #print('{}/api/2/indicators/historical/values/{}:{}?from={}'.format(self.BASE_URL, src, indicator_id, from_date))
         resp = requests.get(
-            '{}/api/2/INDEXES/historical/values/{}:{}?from={}'.format(self.BASE_URL, src, indicator_id, from_date),
+            '{}/api/2/indicators/historical/values/{}:{}?from={}'.format(self.BASE_URL, src, indicator_id, from_date),
             cookies=self.COOKIES,
             headers=self.HEADERS)
         if resp.status_code == 200:
@@ -872,11 +872,11 @@ class Nordnet:
         return p
 
     @before
-    def get_indexes(self) -> (bool, list):
+    def get_indicators(self) -> (bool, list):
         resp = requests.get(
-            '{}/api/2/INDEXES/{}'.format(
+            '{}/api/2/indicators/{}'.format(
                 self.BASE_URL,
-                ','.join(INDEXES)),
+                ','.join(indicators)),
             cookies=self.COOKIES,
             headers=self.HEADERS)
 
@@ -885,11 +885,11 @@ class Nordnet:
 
         return False, []
 
-    def get_indexes_pd(self):
-        status, indexes = self.get_indexes()
+    def get_indicators_pd(self):
+        status, indicators = self.get_indicators()
 
         if status is True:
-            df = pd.DataFrame(indexes)
+            df = pd.DataFrame(indicators)
 
             df['open'] = pd.to_timedelta(df.open, unit='s')
             df['close'] = pd.to_timedelta(df.open, unit='s')
@@ -944,7 +944,7 @@ class Nordnet:
 
         return pd.DataFrame()
 
-    # INDEXES
+    # indicators
     def _get_indicator_list(self, page, limit):
         resp = requests.get(
             '{}/api/2/instrument_search/query/indicator?entity_type=INDEX&limit={}&offset={}'.format(self.BASE_URL,
@@ -957,7 +957,7 @@ class Nordnet:
             return True, result.get('rows', 0), result.get('total_hits', 0), result.get('results')
 
     @before
-    def get_all_INDEXES(self, countries=['no', 'se']):
+    def get_all_indicators(self, countries=['no', 'se']):
 
         limit = 100
         offset = 0
@@ -978,11 +978,11 @@ class Nordnet:
 
         return True, results
 
-    def get_all_INDEXES_pd(self, countries=['no', 'se']):
-        status, indexes = self.get_all_INDEXES(countries=countries)
+    def get_all_indicators_pd(self, countries=['no', 'se']):
+        status, indicators = self.get_all_indicators(countries=countries)
 
         if status is True:
-            df = pd.DataFrame(indexes)
+            df = pd.DataFrame(indicators)
             df['tick_timestamp'] = pd.to_timedelta(df.tick_timestamp, unit='ms')
             return df
 

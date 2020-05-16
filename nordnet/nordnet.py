@@ -141,18 +141,42 @@ class Nordnet:
         return False, []
 
     @before
+    def main_query(self, q) -> (bool, list):
+        return self._GET('main_search?query={}'.format(q))
+
+    @before
+    def main_search(self, q) -> (bool, int, int, list):
+
+        status, result = self.main_query(q)
+
+        instrument_id = None
+        symbol = None
+        instrument_id = None
+        exchange_country = None
+        results = []
+        for r in result:
+            if r['display_group_type'] == 'EQUITY':
+                for i in r.get('results', []):
+                    if i['instrument_type'] == 'ESH' and i['instrument_group_type'] == 'EQ':
+                        results.append(
+                            {
+                                'symbol': i['display_symbol'],
+                                'instrument_id': i['instrument_id'],
+                                'exchange_country': i['exchange_country']
+                            }
+                        )
+
+        return status, results  # instrument_id, symbol, exchange_country
+
+    @before
     def query(self, q) -> (bool, list):
-
         return self._GET('instruments?query={}'.format(q))
-        # status, res =
-        if status is True:
-            return True, res
-
-        return False, []
 
     @before
     def search(self, q) -> (bool, int, int, list):
+
         status, query = self.query(q)
+
         instrument_id = None
         market_id = None
         tradables = []

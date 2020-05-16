@@ -5,7 +5,7 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name="nordnet",
-    version="0.1.1",
+    version="0.2.0",
     author="NTF Trader",
     author_email="ntftrader@gmail.com",
     description="A wrapper for nordnet.no public apis",

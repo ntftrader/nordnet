@@ -212,24 +212,26 @@ class Nordnet:
         status, trades = self.get_trades(instrument_id)
 
         if status is True:
+            try:
+                df = pd.DataFrame(trades[0]['trades'])
+                df['tick_timestamp'] = pd.to_datetime(df.tick_timestamp, unit='ms')
+                df['tick_timestamp'] = df['tick_timestamp'].dt.tz_localize('UTC').dt.tz_convert(LOCAL_TZ)
+                df['trade_timestamp'] = pd.to_datetime(df.trade_timestamp, unit='ms')
+                df['trade_timestamp'] = df['trade_timestamp'].dt.tz_localize('UTC').dt.tz_convert(LOCAL_TZ)
+                df = df.reset_index(drop=False)
+                df.set_index('tick_timestamp', inplace=True)
 
-            df = pd.DataFrame(trades[0]['trades'])
-            df['tick_timestamp'] = pd.to_datetime(df.tick_timestamp, unit='ms')
-            df['tick_timestamp'] = df['tick_timestamp'].dt.tz_localize('UTC').dt.tz_convert(LOCAL_TZ)
-            df['trade_timestamp'] = pd.to_datetime(df.trade_timestamp, unit='ms')
-            df['trade_timestamp'] = df['trade_timestamp'].dt.tz_localize('UTC').dt.tz_convert(LOCAL_TZ)
-            df = df.reset_index(drop=False)
-            df.set_index('tick_timestamp', inplace=True)
+                df.sort_index(inplace=True, ascending=True)
+                # df = df.iloc[::-1]
+                if vwap is True:
+                    df['vwap'] = (df.volume * df.price).cumsum() / df.volume.cumsum()
+                if turnover is True:
+                    df['turnover'] = (df.volume * df.price).cumsum()
+                return df
+            except:
+                pass
 
-            df.sort_index(inplace=True, ascending=True)
-            # df = df.iloc[::-1]
-            if vwap is True:
-                df['vwap'] = (df.volume * df.price).cumsum() / df.volume.cumsum()
-            if turnover is True:
-                df['turnover'] = (df.volume * df.price).cumsum()
-            return df
-        else:
-            return pd.DataFrame()
+        return pd.DataFrame()
 
     @before
     def get_prices(self, instrument_id) -> (bool, list):

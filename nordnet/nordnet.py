@@ -73,6 +73,7 @@ class Nordnet:
 
     def _cookie_age(self) -> int:
         try:
+            print(COOKIE_FILE)
             return time.time() - os.path.getmtime(COOKIE_FILE)
         except:
             return COOKIE_MAX_TIME + 10
@@ -86,10 +87,20 @@ class Nordnet:
                 if r.status_code == 200:
                     self.COOKIES = requests.utils.dict_from_cookiejar(r.cookies)
 
-                    html = r.text.split('<script>window.__initialState__=')[1].split(';</script>')[0]
-                    params = json.loads(json.loads(html))
+                    #html = r.text.split('<script>window.__initialState__=')[1].split(';</script>')[0]
+                    html = r.text.split('>window.__initialState__=')[1].split(';</script>')[0]
 
-                    self.NTAG = params['meta']['ntag']
+                    #params = json.loads(json.loads(html))
+                    start = "ntag\\\":\\\""
+                    terminate = "\\\",\\\""
+                    ntag_idx = html.find( start )
+                    ntag_end = html.find(terminate)
+                    print( ntag_idx )
+                    print( ntag_idx + ntag_end )
+                    print( html[ntag_idx+9: ntag_idx+36+9] )
+
+                    self.NTAG = html[ntag_idx+9:ntag_idx+36+9]
+                    #self.NTAG = params['meta']['ntag']
                     self._save_cookies()
             else:
                 if force is True:

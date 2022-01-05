@@ -4,7 +4,7 @@
 
     A simple wrapper around nordnet.no's (not) public api
 
-    Increase columns if using dataframes and cli
+Increase columns if using dataframes and cli (copy&pasta):
 import pandas as pd
 pd.set_option('display.max_rows', 500)
 pd.set_option('display.max_columns', 500)
@@ -12,13 +12,15 @@ pd.set_option('display.width', 1000)
 
 """
 
+# For future implementations
 # import talib
-import pandas as pd
+# import math
 # import numpy as np
-# import re
+
+import pandas as pd
 import datetime
 import simplejson as json
-# import math
+
 import requests
 import time
 import os
@@ -86,8 +88,10 @@ class Nordnet:
                 if r.status_code == 200:
                     self.COOKIES = requests.utils.dict_from_cookiejar(r.cookies)
 
-                    html = r.text.split('<script>window.__initialState__=')[1].split(';</script>')[0]
-                    params = json.loads(json.loads(html))
+                    html = r.text.split('>window.__initialState__="')[1].split('{}}";')[0]
+                    html = '{' + html + '{}}'
+                    html = html.replace("\\", "")
+                    params = json.loads('{"meta":' + html.split('"meta":')[1])
 
                     self.NTAG = params['meta']['ntag']
                     self._save_cookies()
@@ -160,9 +164,11 @@ class Nordnet:
                     if i['instrument_type'] == 'ESH' and i['instrument_group_type'] == 'EQ':
                         results.append(
                             {
-                                'symbol': i['display_symbol'],
                                 'instrument_id': i['instrument_id'],
+                                'symbol': i['display_symbol'],
+                                'name': i['display_name'],
                                 'exchange_country': i['exchange_country']
+
                             }
                         )
 

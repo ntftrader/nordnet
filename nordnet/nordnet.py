@@ -86,8 +86,10 @@ class Nordnet:
                 if r.status_code == 200:
                     self.COOKIES = requests.utils.dict_from_cookiejar(r.cookies)
 
-                    html = r.text.split('<script>window.__initialState__=')[1].split(';</script>')[0]
-                    params = json.loads(json.loads(html))
+                    html = r.text.split('>window.__initialState__="')[1].split('{}}";')[0]
+                    html = '{' + html + '{}}'
+                    html = html.replace("\\", "")
+                    params = json.loads('{"meta":' + html.split('"meta":')[1])
 
                     self.NTAG = params['meta']['ntag']
                     self._save_cookies()

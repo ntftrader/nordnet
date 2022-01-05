@@ -160,9 +160,11 @@ class Nordnet:
                     if i['instrument_type'] == 'ESH' and i['instrument_group_type'] == 'EQ':
                         results.append(
                             {
-                                'symbol': i['display_symbol'],
                                 'instrument_id': i['instrument_id'],
+                                'symbol': i['display_symbol'],
+                                'name': i['display_name'],
                                 'exchange_country': i['exchange_country']
+
                             }
                         )
 

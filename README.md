@@ -2,14 +2,26 @@
 
 A python wrapper around Scandinavian broker [Nordnet](https://www.nordnet.no)'s external [REST api](https://api.test.nordnet.se/).
 
-Simple
+### Install
+```
+pip install git+https://github.com/ntftrader/nordnet.git
+```
+
+Or a specific version (tag):
+```
+pip install git+https://github.com/ntftrader/nordnet.git@1.0.0
+```
+
+Requirements are requests, pandas, numpy and simplejson.
+### Simple
 ```
 from nordnet import Nordnet
 nn = Nordnet()
 nn.main_search("DNB")
-(True, [{'symbol': 'DNB', 'instrument_id': 16105640, 'exchange_country': 'NO'},
-             {'symbol': 'DNB', 'instrument_id': 16121046, 'exchange_country': 'US'},
-             {'symbol': 'DNBF', 'instrument_id': 16117764, 'exchange_country': 'US'}])
+(True, [{'instrument_id': 16105640, 'symbol': 'DNB', 'name': 'DNB', 'exchange_country': 'NO'},
+        {'instrument_id': 16121046, 'symbol': 'DNB', 'name': 'Dun & Bradstreet Corporation (The)', 'exchange_country': 'US'},
+        {'instrument_id': 16117764, 'symbol': 'DNBF', 'name': 'DNB Financial Corp', 'exchange_country': 'US'}])
+
 ```
 
 ### Data structures

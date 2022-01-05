@@ -4,7 +4,7 @@
 
     A simple wrapper around nordnet.no's (not) public api
 
-    Increase columns if using dataframes and cli
+Increase columns if using dataframes and cli (copy&pasta):
 import pandas as pd
 pd.set_option('display.max_rows', 500)
 pd.set_option('display.max_columns', 500)
@@ -12,13 +12,15 @@ pd.set_option('display.width', 1000)
 
 """
 
+# For future implementations
 # import talib
-import pandas as pd
+# import math
 # import numpy as np
-# import re
+
+import pandas as pd
 import datetime
 import simplejson as json
-# import math
+
 import requests
 import time
 import os
